@@ -1069,10 +1069,10 @@
           const nums = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9].slice());
           const br = b * 3,
             bc = b * 3;
-          let t = 0;
+          let idx = 0;
           for (let r = br; r < br + 3; r++) {
             for (let c = bc; c < bc + 3; c++) {
-              g[idx(r, c)] = nums[t++];
+              g[idx(r, c)] = nums[idx++];
             }
           }
         }
@@ -1231,20 +1231,18 @@
         // selection info
         const [r, c] = rc(selected);
         selPosEl.textContent = `R${r + 1}C${c + 1}`;
-        const t = window.t || ((key, vars = {}) => key);
         const cands = candidatesFor(selected, grid);
         candsEl.textContent = cands.length
           ? cands.join(" ")
           : grid[selected]
           ? "—"
-          : t("candidatesNone");
+          : (window.t || ((key, vars = {}) => key))("candidatesNone");
 
         // mode indicators
         noteStateEl.textContent = noteMode ? "ON" : "OFF";
         errStateEl.textContent = showErrors ? "ON" : "OFF";
 
         // completion check
-        const t = window.t || ((key, vars = {}) => key);
         if (filled === 81 && errCount === 0 && !completeShown) {
           completeShown = true;
           toast(t("toastComplete"));
@@ -1340,7 +1338,6 @@
       }
 
       function checkBoard() {
-        const t = window.t || ((key, vars = {}) => key);
         // mark conflicts already via render(); just show summary
         let bad = 0;
         for (let i = 0; i < 81; i++) {
@@ -1351,18 +1348,17 @@
           if (!isValidPlacement(grid, i, tmp)) bad++;
           grid[i] = tmp;
         }
-        if (bad === 0) toast(t("toastNoViolations"));
-        else toast(t("toastViolations", { count: bad }), "warn");
+        if (bad === 0) toast((window.t || ((key, vars = {}) => key))("toastNoViolations"));
+        else toast((window.t || ((key, vars = {}) => key))("toastViolations", { count: bad }), "warn");
         render();
       }
 
       function hint() {
-        const t = window.t || ((key, vars = {}) => key);
         // fill one empty cell with correct value
         const empties = [];
         for (let i = 0; i < 81; i++) if (grid[i] === 0) empties.push(i);
         if (!empties.length) {
-          toast(t("toastAlreadyFilled"));
+          toast((window.t || ((key, vars = {}) => key))("toastAlreadyFilled"));
           return;
         }
         // pick an empty with least candidates
@@ -1373,12 +1369,11 @@
         const i = empties[0];
         applySetValue(i, solution[i]);
         hintUsed++;
-        toast(t("toastHintFilled"));
+        toast((window.t || ((key, vars = {}) => key))("toastHintFilled"));
         render();
       }
 
       function showSolution() {
-        const t = window.t || ((key, vars = {}) => key);
         // reveal all (non-given)
         for (let i = 0; i < 81; i++) {
           if (!given[i]) {
@@ -1386,12 +1381,11 @@
             notes[i] = new Set();
           }
         }
-        toast(t("toastSolutionShown"));
+        toast((window.t || ((key, vars = {}) => key))("toastSolutionShown"));
         render();
       }
 
       function restartPuzzle() {
-        const t = window.t || ((key, vars = {}) => key);
         completeShown = false;
         hideCompleteOverlay();
         for (let i = 0; i < 81; i++) {
@@ -1431,7 +1425,6 @@
       // Save/Load
       // ===========================
       function saveGame() {
-        const t = window.t || ((key, vars = {}) => key);
         const data = {
           given,
           grid,
@@ -1444,13 +1437,12 @@
           startTs,
         };
         localStorage.setItem(LS_KEY, JSON.stringify(data));
-        toast(t("toastSaved"));
+        toast((window.t || ((key, vars = {}) => key))("toastSaved"));
       }
       function loadGame() {
-        const t = window.t || ((key, vars = {}) => key);
         const raw = localStorage.getItem(LS_KEY);
         if (!raw) {
-          toast(t("toastNoSave"), "warn");
+          toast((window.t || ((key, vars = {}) => key))("toastNoSave"), "warn");
           return;
         }
         try {
@@ -1469,23 +1461,21 @@
           $("btnUndo").disabled = true;
           $("btnRedo").disabled = true;
           startTimer(false);
-          toast(t("toastLoaded"));
+          toast((window.t || ((key, vars = {}) => key))("toastLoaded"));
           render();
         } catch (e) {
-          toast(t("toastLoadFailed"), "bad");
+          toast((window.t || ((key, vars = {}) => key))("toastLoadFailed"), "bad");
         }
       }
       function clearSave() {
-        const t = window.t || ((key, vars = {}) => key);
         localStorage.removeItem(LS_KEY);
-        toast(t("toastSaveCleared"));
+        toast((window.t || ((key, vars = {}) => key))("toastSaveCleared"));
       }
 
       // ===========================
       // New Game
       // ===========================
       function newGame() {
-        const t = window.t || ((key, vars = {}) => key);
         completeShown = false;
         hideCompleteOverlay();
         const diff = $("difficulty").value;
@@ -1508,8 +1498,9 @@
         $("btnRedo").disabled = true;
 
         startTimer(true);
-        const diffMap = { easy: t("diffEasy"), medium: t("diffMedium"), hard: t("diffHard") };
-        toast(t("toastNewGame", { diff: diffMap[diff] || diff }));
+        const tFn = window.t || ((key, vars = {}) => key);
+        const diffMap = { easy: tFn("diffEasy"), medium: tFn("diffMedium"), hard: tFn("diffHard") };
+        toast(tFn("toastNewGame", { diff: diffMap[diff] || diff }));
         render();
       }
 
@@ -1531,15 +1522,15 @@
       });
 
       $("btnNotes").onclick = () => {
-        const t = window.t || ((key, vars = {}) => key);
         noteMode = !noteMode;
-        toast(noteMode ? t("toastNoteOn") : t("toastNoteOff"));
+        const tFn = window.t || ((key, vars = {}) => key);
+        toast(noteMode ? tFn("toastNoteOn") : tFn("toastNoteOff"));
         render();
       };
       $("btnToggleErr").onclick = () => {
-        const t = window.t || ((key, vars = {}) => key);
         showErrors = !showErrors;
-        toast(showErrors ? t("toastErrorOn") : t("toastErrorOff"));
+        const tFn = window.t || ((key, vars = {}) => key);
+        toast(showErrors ? tFn("toastErrorOn") : tFn("toastErrorOff"));
         render();
       };
       $("btnUndo").onclick = undo;
